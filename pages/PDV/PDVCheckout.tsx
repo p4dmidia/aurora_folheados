@@ -50,6 +50,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
   const [isSearchingCustomer, setIsSearchingCustomer] = useState(false);
   const [customerFound, setCustomerFound] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     console.log('PDVCheckout v2 Mounted - Asaas Integration Active');
@@ -439,7 +440,24 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full relative">
+      {/* Floating Cart Button for Mobile */}
+      {step === 'SELECTION' && (
+        <button
+          onClick={() => setIsCartOpen(true)}
+          className="lg:hidden fixed bottom-6 right-6 size-16 bg-brand-dark text-primary rounded-full shadow-2xl z-[40] flex items-center justify-center border-2 border-primary/20"
+        >
+          <div className="relative">
+            <span className="material-symbols-outlined text-3xl">shopping_bag</span>
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 size-6 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand-dark">
+                {cart.reduce((acc, i) => acc + i.quantity, 0)}
+              </span>
+            )}
+          </div>
+        </button>
+      )}
+
       <div className="flex-1 flex flex-col p-8 overflow-y-auto custom-scrollbar">
         <PageHeader
           title={step === 'CUSTOMER' ? 'Identificação do Cliente' : step === 'PAYMENT' ? 'Forma de Pagamento' : 'Frente de Caixa'}
@@ -749,10 +767,23 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
         )}
       </div>
 
-      <aside className="w-[400px] bg-white border-l border-gray-200 flex flex-col z-20 shadow-2xl">
-        <div className="p-8 pb-4">
-          <h3 className="text-2xl font-black text-brand-dark uppercase">Sacola</h3>
-          <p className="text-xs text-gray-400">{cart.length} itens selecionados</p>
+      <aside className={`
+        fixed lg:static inset-y-0 right-0 w-full sm:w-[400px] lg:w-[400px] 
+        bg-white border-l border-gray-200 flex flex-col z-[50] shadow-2xl
+        transition-all duration-300 transform
+        ${isCartOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-8 pb-4 flex justify-between items-center">
+          <div>
+            <h3 className="text-2xl font-black text-brand-dark uppercase">Sacola</h3>
+            <p className="text-xs text-gray-400">{cart.length} itens selecionados</p>
+          </div>
+          <button
+            onClick={() => setIsCartOpen(false)}
+            className="lg:hidden p-2 text-gray-400 hover:text-brand-dark"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 py-4 space-y-4">
