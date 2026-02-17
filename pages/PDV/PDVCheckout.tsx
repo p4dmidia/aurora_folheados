@@ -51,6 +51,17 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
   const [customerFound, setCustomerFound] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+
+  useEffect(() => {
+    const checkDevice = () => {
+      setIsMobileOrTablet(window.innerWidth < 1024);
+    };
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
 
   useEffect(() => {
     console.log('PDVCheckout v2 Mounted - Asaas Integration Active');
@@ -284,6 +295,11 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
   const isCustomerValid = customer.nome.length > 3 || customer.whatsapp.length >= 0; // Relaxed for quick sale
   const canFinishSale = !!paymentMethod;
 
+  const filteredProducts = products.filter(p =>
+    p.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.sku.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (!pdv && !loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-[#f4f3f0]">
@@ -445,7 +461,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
       {step === 'SELECTION' && (
         <button
           onClick={() => setIsCartOpen(true)}
-          className="lg:hidden fixed bottom-6 right-6 size-16 bg-brand-dark text-primary rounded-full shadow-2xl z-[40] flex items-center justify-center border-2 border-primary/20"
+          className="lg:hidden fixed bottom-6 right-6 h-16 px-6 bg-brand-dark text-white rounded-full shadow-2xl z-[40] flex items-center justify-center gap-3 border-2 border-primary/20"
         >
           <div className="relative">
             <span className="material-symbols-outlined text-3xl">shopping_bag</span>
@@ -455,6 +471,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
               </span>
             )}
           </div>
+          <span className="font-black text-sm tracking-widest">CONTINUAR</span>
         </button>
       )}
 
@@ -462,8 +479,8 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
         <PageHeader
           title={step === 'CUSTOMER' ? 'Identificação do Cliente' : step === 'PAYMENT' ? 'Forma de Pagamento' : 'Frente de Caixa'}
           actions={
-            step === 'SELECTION' && (
-              <Button variant="brand" icon="qr_code_scanner" onClick={() => setShowScanner(true)}>Escanear QR</Button>
+            step === 'SELECTION' && isMobileOrTablet && (
+              <Button variant="brand" icon="qr_code_scanner" onClick={() => setShowScanner(true)}>Escanear</Button>
             )
           }
         />
@@ -473,43 +490,56 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
             <span className="material-symbols-outlined animate-spin text-4xl text-primary">sync</span>
           </div>
         ) : step === 'SELECTION' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.length === 0 ? (
-              <div className="col-span-3 text-center py-12 text-gray-400">
-                <span className="material-symbols-outlined text-4xl mb-2">remove_shopping_cart</span>
-                <p>Nenhum produto em estoque disponível para venda.</p>
-              </div>
-            ) : (
-              products.map(product => (
-                <Card key={product.id} padding="small" className="group">
-                  <div className="aspect-square rounded-xl overflow-hidden mb-4 bg-gray-50 relative">
-                    <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm">
-                      Estoque: {product.estoque}
-                    </div>
-                    {product.imagemUrl ? (
-                      <img src={product.imagemUrl} alt={product.nome} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <span className="material-symbols-outlined text-4xl">image</span>
+          <div className="space-y-6">
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+              <input
+                type="text"
+                placeholder="Pesquisar por produto ou SKU..."
+                className="w-full h-14 pl-12 pr-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-medium"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.length === 0 ? (
+                <div className="col-span-3 text-center py-12 text-gray-400">
+                  <span className="material-symbols-outlined text-4xl mb-2">remove_shopping_cart</span>
+                  <p>Nenhum produto encontrado.</p>
+                </div>
+              ) : (
+                filteredProducts.map(product => (
+                  <Card key={product.id} padding="small" className="group">
+                    <div className="aspect-square rounded-xl overflow-hidden mb-4 bg-gray-50 relative">
+                      <div className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm">
+                        Estoque: {product.estoque}
                       </div>
-                    )}
-                  </div>
-                  <h3 className="font-bold text-sm truncate">{product.nome}</h3>
-                  <p className="text-[10px] text-gray-400 uppercase">{product.sku}</p>
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-primary font-black">R$ {product.preco.toFixed(2)}</span>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      icon="add"
-                      className="!p-2"
-                      disabled={product.estoque <= 0}
-                      onClick={() => addToCart(product)}
-                    />
-                  </div>
-                </Card>
-              ))
-            )}
+                      {product.imagemUrl ? (
+                        <img src={product.imagemUrl} alt={product.nome} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                          <span className="material-symbols-outlined text-4xl">image</span>
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="font-bold text-sm truncate">{product.nome}</h3>
+                    <p className="text-[10px] text-gray-400 uppercase">{product.sku}</p>
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="text-primary font-black">R$ {product.preco.toFixed(2)}</span>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        icon="add"
+                        className="!p-2"
+                        disabled={product.estoque <= 0}
+                        onClick={() => addToCart(product)}
+                      />
+                    </div>
+                  </Card>
+                ))
+              )}
+            </div>
           </div>
         ) : step === 'CUSTOMER' ? (
           <div className="max-w-xl mx-auto w-full py-10">
