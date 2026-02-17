@@ -42,6 +42,7 @@ const App: React.FC = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState<User>(MOCK_USERS[0]);
   const [loading, setLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     checkSession();
@@ -105,10 +106,35 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="flex h-screen bg-background-light dark:bg-background-dark overflow-hidden text-brand-dark dark:text-white">
-        <Sidebar user={currentUser} onRoleChange={handleRoleChange} onLogout={handleLogout} />
+      <div className="flex h-screen bg-background-light dark:bg-background-dark overflow-hidden text-brand-dark dark:text-white relative">
+        {/* Mobile Header */}
+        <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-brand-dark flex items-center justify-between px-6 z-40 border-b border-white/10">
+          <img src="/logo_aurora.png" alt="Aurora" className="h-8 w-auto" />
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
+        </div>
 
-        <main className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Backdrop for mobile */}
+        {isSidebarOpen && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] transition-opacity"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        <Sidebar
+          user={currentUser}
+          onRoleChange={handleRoleChange}
+          onLogout={handleLogout}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+
+        <main className="flex-1 overflow-y-auto custom-scrollbar pt-16 lg:pt-0">
           <Routes>
             {/* Admin Routes */}
             {currentUser.role === Role.ADMIN && (

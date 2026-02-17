@@ -7,9 +7,11 @@ interface SidebarProps {
   user: User;
   onRoleChange: (role: Role) => void;
   onLogout: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, onRoleChange, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, onRoleChange, onLogout, isOpen, onClose }) => {
   const adminLinks = [
     { to: '/', icon: 'dashboard', label: 'Painel' },
     { to: '/admin/usuarios', icon: 'person_search', label: 'Equipe' },
@@ -44,9 +46,18 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onRoleChange, onLogout }) => {
   const links = user.role === Role.ADMIN ? adminLinks : user.role === Role.PROMOTOR ? promoterLinks : pdvLinks;
 
   return (
-    <aside className="w-64 bg-brand-dark text-white flex flex-col h-full py-6 shrink-0 z-50 print:hidden transition-all duration-300">
+    <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-brand-dark text-white flex flex-col h-full py-6 shrink-0 z-50 print:hidden transition-all duration-300 transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
       {/* Header - Fixed */}
-      <div className="px-6 flex flex-col items-center gap-2 mb-6 shrink-0">
+      <div className="px-6 flex flex-col items-center gap-2 mb-6 shrink-0 relative">
+        {/* Close Button Mobile */}
+        <button
+          onClick={onClose}
+          className="lg:hidden absolute -right-2 top-0 p-2 text-white/50 hover:text-white"
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
+
         <img src="/logo_aurora.png" alt="Aurora Foliados" className="w-32 h-auto" />
         <p className="text-primary text-[10px] font-bold opacity-80 uppercase tracking-tighter text-center">
           {user.role === Role.ADMIN ? 'Foliados Admin' : 'Foliados System'}
@@ -59,6 +70,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onRoleChange, onLogout }) => {
           <NavLink
             key={link.to}
             to={link.to}
+            onClick={() => {
+              if (window.innerWidth < 1024) onClose();
+            }}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-lg transition-all shrink-0 ${isActive
                 ? 'bg-primary/10 border-l-4 border-primary text-[#d1ae77]'
