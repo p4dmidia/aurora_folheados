@@ -461,7 +461,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
       {step === 'SELECTION' && (
         <button
           onClick={() => setIsCartOpen(true)}
-          className="lg:hidden fixed bottom-6 right-6 h-16 px-6 bg-brand-dark text-white rounded-full shadow-2xl z-[40] flex items-center justify-center gap-3 border-2 border-primary/20"
+          className="lg:hidden fixed bottom-6 left-6 h-16 px-6 bg-brand-dark text-white rounded-full shadow-2xl z-[40] flex items-center justify-center gap-3 border-2 border-primary/20"
         >
           <div className="relative">
             <span className="material-symbols-outlined text-3xl">shopping_bag</span>
@@ -868,7 +868,10 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
               size="lg"
               className="w-full"
               disabled={cart.length === 0}
-              onClick={() => setStep('CUSTOMER')}
+              onClick={() => {
+                setStep('CUSTOMER');
+                setIsCartOpen(false);
+              }}
             >
               Identificar Cliente
             </Button>
