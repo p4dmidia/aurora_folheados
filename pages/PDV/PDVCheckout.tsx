@@ -18,6 +18,11 @@ interface PDVProduct extends Product {
   estoque: number;
 }
 
+interface CartItem {
+  product: PDVProduct;
+  quantity: number;
+}
+
 const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
@@ -140,6 +145,27 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
       }
       return [...prev, { product, quantity: 1 }];
     });
+  };
+
+  const updateCartQuantity = (productId: string, delta: number) => {
+    setCart(prev => {
+      return prev.map(item => {
+        if (item.product.id === productId) {
+          const newQty = item.quantity + delta;
+          if (delta > 0 && newQty > item.product.estoque) {
+            alert('Quantidade máxima em estoque atingida.');
+            return item;
+          }
+          if (newQty <= 0) return null;
+          return { ...item, quantity: newQty };
+        }
+        return item;
+      }).filter((item): item is CartItem => item !== null);
+    });
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart(prev => prev.filter(item => item.product.id !== productId));
   };
 
   const handleScan = (sku: string) => {
@@ -818,17 +844,44 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
 
         <div className="flex-1 overflow-y-auto px-8 py-4 space-y-4">
           {cart.map((item, i) => (
-            <div key={i} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-              {item.product.imagemUrl ? (
-                <img src={item.product.imagemUrl} alt="" className="size-12 rounded-lg object-cover" />
-              ) : (
-                <div className="size-12 bg-gray-200 rounded-lg flex items-center justify-center"><span className="material-symbols-outlined">image</span></div>
-              )}
-              <div className="flex-1">
-                <p className="text-xs font-bold truncate">{item.product.nome}</p>
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-[10px] text-primary font-bold">R$ {item.product.preco.toFixed(2)}</span>
-                  <span className="text-xs font-bold text-gray-400">x{item.quantity}</span>
+            <div key={i} className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100 group">
+              <div className="relative">
+                {item.product.imagemUrl ? (
+                  <img src={item.product.imagemUrl} alt="" className="size-16 rounded-xl object-cover" />
+                ) : (
+                  <div className="size-16 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400">
+                    <span className="material-symbols-outlined">image</span>
+                  </div>
+                )}
+                <button
+                  onClick={() => removeFromCart(item.product.id)}
+                  className="absolute -top-2 -left-2 size-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                >
+                  <span className="material-symbols-outlined text-xs">close</span>
+                </button>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-brand-dark truncate pr-4">{item.product.nome}</p>
+                <p className="text-[10px] text-gray-400 font-medium">{item.product.sku}</p>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-[10px] text-primary font-black">R$ {item.product.preco.toFixed(2)}</span>
+
+                  <div className="flex items-center bg-white border border-gray-100 rounded-lg p-1 gap-3">
+                    <button
+                      onClick={() => updateCartQuantity(item.product.id, -1)}
+                      className="size-6 rounded-md hover:bg-gray-50 flex items-center justify-center text-gray-400 hover:text-brand-dark transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">remove</span>
+                    </button>
+                    <span className="text-xs font-black min-w-4 text-center">{item.quantity}</span>
+                    <button
+                      onClick={() => updateCartQuantity(item.product.id, 1)}
+                      className="size-6 rounded-md hover:bg-gray-50 flex items-center justify-center text-gray-400 hover:text-brand-dark transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">add</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
