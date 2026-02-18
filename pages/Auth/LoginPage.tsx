@@ -45,7 +45,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onForgotPassword 
           <div className="max-w-md">
             <div className="flex items-center gap-3 mb-6">
               <span className="material-symbols-outlined text-accent-gold text-4xl">diamond</span>
-              <h2 className="text-3xl font-extrabold tracking-tight">Aurora Foliados</h2>
+              <h2 className="text-3xl font-extrabold tracking-tight">Aurora Folheados</h2>
             </div>
             <p className="text-lg font-light leading-relaxed opacity-90">
               Excelência em semijoias para parceiros, promotores e administradores que buscam o brilho da perfeição em cada detalhe.
@@ -62,7 +62,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onForgotPassword 
           <div className="flex flex-col items-center mb-10">
             <div className="lg:hidden flex items-center gap-2 mb-6 text-primary dark:text-white">
               <span className="material-symbols-outlined text-accent-gold text-4xl">diamond</span>
-              <h2 className="text-2xl font-bold">Aurora Foliados</h2>
+              <h2 className="text-2xl font-bold">Aurora Folheados</h2>
             </div>
             <h1 className="text-primary dark:text-white tracking-tight text-3xl font-extrabold leading-tight text-center">
               Bem-vindo

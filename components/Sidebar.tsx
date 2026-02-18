@@ -58,9 +58,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onRoleChange, onLogout, isOpen,
           <span className="material-symbols-outlined">close</span>
         </button>
 
-        <img src="/logo_aurora.png" alt="Aurora Foliados" className="w-32 h-auto" />
+        <img src="/logo_aurora.png" alt="Aurora Folheados" className="w-32 h-auto" />
         <p className="text-primary text-[10px] font-bold opacity-80 uppercase tracking-tighter text-center">
-          {user.role === Role.ADMIN ? 'Foliados Admin' : 'Foliados System'}
+          {user.role === Role.ADMIN ? 'Folheados Admin' : 'Folheados System'}
         </p>
       </div>
 

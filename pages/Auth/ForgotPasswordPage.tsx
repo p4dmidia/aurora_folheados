@@ -26,7 +26,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onBackToLogin }
               <div className="size-10 flex items-center justify-center bg-primary rounded-lg text-accent-gold">
                 <span className="material-symbols-outlined">diamond</span>
               </div>
-              <span className="text-xl font-extrabold tracking-tight uppercase">Aurora Foliados</span>
+              <span className="text-xl font-extrabold tracking-tight uppercase">Aurora Folheados</span>
             </div>
 
             {/* HeadlineText */}
@@ -45,20 +45,20 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onBackToLogin }
             <div className="flex flex-col w-full">
               <label className="flex flex-col flex-1">
                 <p className="text-[#131515] dark:text-white text-sm font-black uppercase tracking-widest leading-normal pb-3">E-mail</p>
-                <input 
+                <input
                   required
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="form-input flex w-full resize-none overflow-hidden rounded-lg text-[#131515] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dfe2e1] dark:border-[#3d4543] bg-white dark:bg-[#252a29] focus:border-primary h-14 placeholder:text-[#6f7b77] px-4 text-base font-normal" 
-                  placeholder="exemplo@email.com" 
+                  className="form-input flex w-full resize-none overflow-hidden rounded-lg text-[#131515] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dfe2e1] dark:border-[#3d4543] bg-white dark:bg-[#252a29] focus:border-primary h-14 placeholder:text-[#6f7b77] px-4 text-base font-normal"
+                  placeholder="exemplo@email.com"
                 />
               </label>
             </div>
 
             {/* Action Button */}
             <div className="pt-2">
-              <button 
+              <button
                 type="submit"
                 className="w-full flex h-14 items-center justify-center rounded-lg bg-primary text-white text-sm font-black uppercase tracking-widest transition-all hover:bg-opacity-90 active:scale-[0.98] shadow-lg shadow-primary/10"
               >
@@ -69,7 +69,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onBackToLogin }
 
           {/* Footer Link */}
           <div className="mt-10 flex items-center justify-center">
-            <button 
+            <button
               onClick={onBackToLogin}
               className="flex items-center gap-2 text-primary dark:text-[#a1aca9] text-sm font-bold hover:underline transition-all group"
             >
@@ -81,7 +81,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onBackToLogin }
 
         {/* Copyright */}
         <p className="text-[#6f7b77] dark:text-[#5c6a65] text-xs text-center mt-8 font-medium">
-          © 2024 Aurora Foliados. Todos os direitos reservados.
+          © 2024 Aurora Folheados. Todos os direitos reservados.
         </p>
       </div>
     </div>
