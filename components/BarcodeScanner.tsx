@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import Card from './Card';
 import Button from './Button';
 
@@ -9,15 +9,16 @@ interface BarcodeScannerProps {
 }
 
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
-    const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+    const scannerRef = useRef<Html5Qrcode | null>(null);
 
     useEffect(() => {
         // Initialize scanner
+        const html5QrCode = new Html5Qrcode("reader");
+        scannerRef.current = html5QrCode;
+
         const config = {
             fps: 10,
             qrbox: { width: 250, height: 250 },
-            rememberLastUsedCamera: true,
-            supportedScanTypes: [0], // Only camera
             formatsToSupport: [
                 Html5QrcodeSupportedFormats.QR_CODE,
                 Html5QrcodeSupportedFormats.EAN_13,
@@ -26,28 +27,29 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
             ]
         };
 
-        scannerRef.current = new Html5QrcodeScanner(
-            "reader",
+        // Start scanning with back camera by default
+        html5QrCode.start(
+            { facingMode: "environment" },
             config,
-      /* verbose= */ false
-        );
-
-        scannerRef.current.render(
             (decodedText) => {
                 // Stop scanner on success
-                if (scannerRef.current) {
-                    scannerRef.current.clear();
-                }
-                onScan(decodedText);
+                html5QrCode.stop().then(() => {
+                    onScan(decodedText);
+                }).catch(err => {
+                    console.error("Failed to stop scanner", err);
+                    onScan(decodedText);
+                });
             },
-            (error) => {
-                // Silently ignore errors (most are just frame failures)
+            (errorMessage) => {
+                // Silently ignore errors
             }
-        );
+        ).catch(err => {
+            console.error("Failed to start scanner", err);
+        });
 
         return () => {
-            if (scannerRef.current) {
-                scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err));
+            if (scannerRef.current && scannerRef.current.isScanning) {
+                scannerRef.current.stop().catch(err => console.error("Failed to stop scanner on unmount", err));
             }
         };
     }, [onScan]);
