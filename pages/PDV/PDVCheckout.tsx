@@ -12,6 +12,7 @@ import { mercadoPagoService } from '../../services/mercadoPagoService';
 import { receiptService } from '../../services/receiptService';
 import { customerService } from '../../services/customerService';
 import { supabase } from '../../lib/supabase';
+import Toast, { ToastType } from '../../components/Toast';
 
 // Extended Product interface for what we display
 interface PDVProduct extends Product {
@@ -58,6 +59,11 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+  const showToast = (message: string, type: ToastType = 'info') => {
+    setToast({ message, type });
+  };
 
   useEffect(() => {
     const checkDevice = () => {
@@ -138,7 +144,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
       if (existing) {
         // Check stock limit
         if (existing.quantity >= product.estoque) {
-          alert('Quantidade máxima em estoque atingida.');
+          showToast('Quantidade máxima em estoque atingida.', 'warning');
           return prev;
         }
         return prev.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
@@ -153,7 +159,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
         if (item.product.id === productId) {
           const newQty = item.quantity + delta;
           if (delta > 0 && newQty > item.product.estoque) {
-            alert('Quantidade máxima em estoque atingida.');
+            showToast('Quantidade máxima em estoque atingida.', 'warning');
             return item;
           }
           if (newQty <= 0) return null;
@@ -174,7 +180,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
       addToCart(product);
       setShowScanner(false);
     } else {
-      alert('Produto não encontrado ou sem estoque.');
+      showToast('Produto não encontrado ou sem estoque.', 'error');
     }
   };
 
@@ -264,22 +270,22 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
         let cardToken = '';
         if ((window as any).MercadoPago) {
           try {
-            const mp = new (window as any).MercadoPago((import.meta as any).env.VITE_MERCADOPAGO_PUBLIC_KEY);
+            const mp = new (window as any).MercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY);
             const [month, year] = ccForm.expiry.split('/');
 
             const tokenResult = await mp.createCardToken({
               cardNumber: ccForm.number.replace(/\s/g, ''),
               cardholderName: ccForm.holderName,
               cardExpirationMonth: month,
-              cardExpirationYear: '20' + year,
+              cardExpirationYear: '20' + year || '2026',
               securityCode: ccForm.ccv,
               identificationType: 'CPF',
               identificationNumber: customer.cpf
             });
             cardToken = tokenResult.id;
-          } catch (tokenErr) {
+          } catch (tokenErr: any) {
             console.error('Tokenization error:', tokenErr);
-            throw new Error('Erro ao processar dados do cartão. Verifique os dados e tente novamente.');
+            throw new Error(tokenErr.message || 'Erro ao processar dados do cartão. Verifique os dados e tente novamente.');
           }
         }
 
@@ -308,7 +314,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
 
     } catch (err: any) {
       console.error(err);
-      alert('Erro ao processar venda: ' + err.message);
+      showToast(err.message, 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -358,7 +364,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
       document.body.removeChild(a);
     } catch (err) {
       console.error(err);
-      alert('Erro ao gerar PDF.');
+      showToast('Erro ao gerar PDF.', 'error');
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -411,7 +417,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
         pdfUrl = receiptService.getReceiptUrl(path);
       } catch (e: any) {
         console.error('Upload failed', e);
-        alert(e.message || 'Erro ao fazer upload do PDF. O link não será enviado.');
+        showToast('Erro ao fazer upload do PDF. O link não será enviado.', 'warning');
       }
 
       if (pdfUrl) {
@@ -424,7 +430,7 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
       window.open(whatsappUrl, '_blank');
     } catch (err) {
       console.error(err);
-      alert('Erro ao preparar envio.');
+      showToast('Erro ao preparar envio.', 'error');
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -936,6 +942,14 @@ const PDVCheckout: React.FC<{ user: User }> = ({ user }) => {
         <BarcodeScanner
           onScan={handleScan}
           onClose={() => setShowScanner(false)}
+        />
+      )}
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
     </div>
